@@ -1,0 +1,79 @@
+#Import all the necessary external programs
+import requests
+from bs4 import BeautifulSoup
+import smtplib
+import time
+import webbrowser
+
+URL = '''https://www.amazon.co.uk/Apple-iPhone-11-Pro-64GB/dp/B07XRDXNQ5/ref=sr_1_1_sspa?dchild=1&keywords=iphone+11+pro&qid=1589199267&sr=
+8-1-spons&psc=1&spLa=ZW5jcnlwdGVkUXVhbGlmaWVyPUEyNThLN09VUVhDSE0mZW5jcnlwdGVkSWQ9QTAxODk2NTYyUkVUT0o3TEFTM09IJmVuY3J5cHRlZEFkSWQ9QTEwMDAxNDh
+FVFpUMlFaTzdFQTYmd2lkZ2V0TmFtZT1zcF9hdGYmYWN0aW9uPWNsaWNrUmVkaXJlY3QmZG9Ob3RMb2dDbGljaz10cnVl'''
+
+#Found by writing "My user agent" on Google
+headers = {"User-Agent": 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/81.0.4044.138 Safari/537.36'}
+
+#A function that checks the price of the product through web parsing, converts it into a float, and if it is
+#less than a certain, value, it will call the send_mail() funciton.
+def check_price():
+	page = requests.get(URL, headers=headers)
+
+	soup = BeautifulSoup(page.content, 'html.parser')
+
+	price = soup.find(id="priceblock_ourprice").getText()
+	price1 = price[1:6]
+	price2 = price1.replace(',','.')
+	converted_price = float(price2)
+
+	if converted_price < 1.200:
+		send_mail()
+
+	print(converted_price)
+
+# Function for sending en email
+def send_mail():
+	# Connects to Gmail server
+	server = smtplib.SMTP('smtp.gmail.com', 587)
+	server.ehlo()
+	server.starttls()
+	server.ehlo()
+
+	# Logs into the account programming.use.leo@gmail.com
+	server.login('programming.use.leonardo@gmail.com', 'likenation')
+
+	# What to write in the email
+	subject = "PRICE CHANGE"
+	body = """
+	The price of the iPhone 11 Pro has dropped below 1,200 Euros!
+	Check out the amazon link: 
+
+	https://www.amazon.co.uk/Apple-iPhone-11-Pro-64GB/dp/B07XRDXNQ5/ref=sr_1_1_sspa?dchild=1&keywords=iphone+11+pro&qid=1589199267&sr=
+	8-1-spons&psc=1&spLa=ZW5jcnlwdGVkUXVhbGlmaWVyPUEyNThLN09VUVhDSE0mZW5jcnlwdGVkSWQ9QTAxODk2NTYyUkVUT0o3TEFTM09IJmVuY3J5cHRlZEFkSWQ9QTEwMDAxNDh
+	FVFpUMlFaTzdFQTYmd2lkZ2V0TmFtZT1zcF9hdGYmYWN0aW9uPWNsaWNrUmVkaXJlY3QmZG9Ob3RMb2dDbGljaz10cnVl
+
+	"""
+
+	msg = f"Subject: {subject}\n\n{body}"
+
+	server.sendmail(
+		'programming.use.leonardo@gmail.com',
+		'leonardo.phithak@gmail.com',
+		msg
+		)
+
+	# End the connection with the server
+	server.quit()
+
+	# A message to leave behind
+	print("There has been a change in the price!!!")
+	print("Check your inbox!")
+	print("\n")
+	print("Gmail will open in 5 seconds")
+	while True:
+		time.sleep(7)
+		webbrowser.open('www.gmail.com')
+		time.sleep(9999999999999999999999)
+
+# A loop to check the price every half hour
+while True:
+	check_price()
+	time.sleep(60*30)
